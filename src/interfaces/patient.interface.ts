@@ -1,9 +1,13 @@
-export interface IPatient {
+import  {  Document } from 'mongoose';
+
+export interface IPatient extends Document {
   name: string;
   age: number;
   email: string;
   phno: number;
-  ailment: string;
-  required_specialist: string;
+  password: string;
+  ailment?: string;
+  required_specialist?: string;
   ailment_status?: boolean;
+  refreshToken?: string; 
 }

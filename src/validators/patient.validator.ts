@@ -1,55 +1,63 @@
-import { Request, Response, NextFunction } from 'express';
 import Joi from '@hapi/joi';
+import { Request, Response, NextFunction } from 'express';
 
-export class PatientValidator {
-  public validatePatient = (req: Request, res: Response, next: NextFunction): void => {
-    const schema = Joi.object({
-      name: Joi.string().required().messages({
-        'string.empty': 'Name is required',
-        'any.required': 'Name is required',
-      }),
-      age: Joi.number().min(0).max(120).required().messages({
-        'number.base': 'Age must be a number',
-        'number.min': 'Age must be at least 0',
-        'number.max': 'Age must not exceed 120',
-        'any.required': 'Age is required',
-      }),
-      email: Joi.string().email().required().messages({
-        'string.email': 'Please provide a valid email',
-        'string.empty': 'Email is required',
-        'any.required': 'Email is required',
-      }),
-      phno: Joi.string()
-        .pattern(/^[0-9]{10}$/)
-        .required()
-        .messages({
-          'string.pattern.base': 'Phone number must be a 10-digit number',
-          'string.empty': 'Phone number is required',
-          'any.required': 'Phone number is required',
-        }),
-      ailment: Joi.string().required().messages({
-        'string.empty': 'Ailment description is required',
-        'any.required': 'Ailment description is required',
-      }),
-      required_specialist: Joi.string().required().messages({
-        'string.empty': 'Required specialist is required',
-        'any.required': 'Required specialist is required',
-      }),
-      ailment_status: Joi.boolean().messages({
-        'boolean.base': 'Ailment status must be true or false',
-      }),
-    });
+// Joi schema for signup
+const signupSchema = Joi.object({
+  name: Joi.string().required(),
+  age: Joi.number().required(),
+  email: Joi.string().email().required(),
+  phno: Joi.number().required(),
+  password: Joi.string().min(6).required(),
+});
 
-    const { error } = schema.validate(req.body, { abortEarly: false });
+// Joi schema for login
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
+
+// Joi schema for booking appointment
+const bookAppointmentSchema = Joi.object({
+  ailment: Joi.string().required(),
+  required_specialist: Joi.string().required(),
+  ailment_status: Joi.boolean(),
+});
+
+// Joi schema for forgot password (email)
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.email': 'Please provide a valid email address to reset password',
+    'any.required': 'Email is required'
+  }),
+});
+
+// Joi schema for reset password (new password)
+const resetPasswordSchema = Joi.object({
+  newPassword: Joi.string().min(6).required().messages({
+    'string.min': 'New password must be at least 6 characters long',
+    'any.required': 'New password is required'
+  }),
+});
+
+// Middleware for validation
+const validateRequest = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { error } = schema.validate(req.body);
     if (error) {
-      const errors = error.details.map((err) => err.message);
-      res.status(400).json({
+      return res.status(400).json({
         code: 400,
-        message: 'Validation error',
-        errors,
+        message: error.details[0].message,
       });
-    } else {
-      next();
     }
+    next();
   };
-}
+};
+
+// Export validation middlewares
+export const PatientValidator = {
+  validateSignup: validateRequest(signupSchema),
+  validateLogin: validateRequest(loginSchema),
+  validateBookAppointment: validateRequest(bookAppointmentSchema),
+  validateForgotPassword: validateRequest(forgotPasswordSchema),
+  validateResetPassword: validateRequest(resetPasswordSchema),
+};

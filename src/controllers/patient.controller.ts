@@ -1,26 +1,123 @@
 import { Request, Response, NextFunction } from 'express';
-import HttpStatus from 'http-status-codes';
 import PatientService from '../services/patient.service';
+import HttpStatus from 'http-status-codes';
+
 
 export class PatientController {
-  public createPatient = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> => {
-    try {
-      await PatientService.createPatient(req.body);
 
+  //Signup for patient controller
+  public async signup(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await PatientService.signup(req.body);
       res.status(HttpStatus.CREATED).json({
         code: HttpStatus.CREATED,
-        message: 'Booked appointment successfully',
+        message: 'Patient signed up successfully',
+        data: result,
       });
     } catch (error) {
       res.status(HttpStatus.BAD_REQUEST).json({
         code: HttpStatus.BAD_REQUEST,
-        message: `Error booking patients appointment: ${error.message}`,
+        message: error.message || 'Signup failed',
+      });
+      next(error);
+    }
+  }
+
+  // Login for patient controller
+  public async login(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await PatientService.login(req.body);
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Login successful',
+        data: result,
+      });
+    } catch (error) {
+      res.status(HttpStatus.UNAUTHORIZED).json({
+        code: HttpStatus.UNAUTHORIZED,
+        message: error.message || 'Invalid email or password',
+      });
+      next(error);
+    }
+  }
+
+  // Book appointment for patient controller
+  public async bookAppointment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const patientId = res.locals.user.id; // Patient ID from the authenticated token
+      const appointmentData = { ...req.body, patientId };
+      const result = await PatientService.bookAppointment(appointmentData);
+
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Appointment booked successfully',
+        data: result,
+      });
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
+        message: error.message || 'Failed to book appointment',
+      });
+      next(error);
+    }
+  }
+
+      // forget password 
+      public forgotPassword = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+      ): Promise<any> => {
+        try {
+          await PatientService.forgotPassword(req.body.email);
+          res.status(HttpStatus.OK).json({
+            code: HttpStatus.OK,
+            message: "Reset password token sent to registered email id"
+          });
+        } catch (error) {
+          res.status(HttpStatus.NOT_FOUND).json({
+            code: HttpStatus.NOT_FOUND,
+            message: 'User not found'
+          });
+        }
+      };
+
+        //Reset Password
+  public resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const customerId = res.locals.user._id;
+      await PatientService.resetPassword(req.body, customerId);
+
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Password reset successfully',
+      });
+    } catch (error) {
+      res.status(HttpStatus.UNAUTHORIZED).send({
+        code: HttpStatus.UNAUTHORIZED,
+        message : error.message
+      });
+    }
+  };
+
+  //refresh token
+  public refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      const patientId = req.params.id; // Get patient ID from params
+      const newAccessToken = await PatientService.refreshToken(patientId);
+
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Access token refreshed successfully',
+        token: newAccessToken,
+      });
+    } catch (error) {
+      res.status(HttpStatus.UNAUTHORIZED).json({
+        code: HttpStatus.UNAUTHORIZED,
+        message: error.message,
       });
     }
   };
 }
 
+export default new PatientController();
