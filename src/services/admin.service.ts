@@ -9,7 +9,7 @@ import { body } from 'express-validator';
 
 
 export class AdminService {
-  
+
   // Register admin
   public static registerAdmin = async (name: string, email:string, password: string) => {
     const existingAdmin = await AdminModel.findOne({ email });
@@ -36,10 +36,21 @@ export class AdminService {
     return { token, refreshToken };
   }
 
-  // Get all doctors
-  public static getAllDoctors = async () => {
-    return await doctorModel.find();
-  };
+// Get all doctors with pagination
+public static getAllDoctors = async (
+  page: number,
+  limit: number
+): Promise<{ doctors: any[]; total: number }> => {
+  try {
+    const skip = (page - 1) * limit;
+    const doctors = await doctorModel.find().skip(skip).limit(limit);
+    const total = await doctorModel.countDocuments();
+    return { doctors, total };
+  } catch (error) {
+    throw new Error(`Error fetching doctors: ${error.message}`);
+  }
+};
+
 
   // Get doctor by ID
   public static getDoctorById = async (id: string) => {

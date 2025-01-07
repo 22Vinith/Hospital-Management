@@ -38,23 +38,40 @@ public loginAdmin = async (req: Request, res: Response, next: NextFunction): Pro
     }
   };
 
-  // Get all doctors
-  public getAllDoctors = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-      const doctors = await AdminService.getAllDoctors();
-      res.status(HttpStatus.OK).json({
+// Get all doctors with pagination
+public getAllDoctors = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const { doctors, total } = await AdminService.getAllDoctors(page, limit);
+    if (doctors.length === 0) {
+      return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
-        message: 'Doctors retrieved successfully',
-        doctors
-      });
-    } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Error fetching doctors',
-        error: error.message,
+        message: 'No doctors found',
+        doctors: [],
+        pagination: { page, limit, total: 0 },
       });
     }
-  };
+    res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      message: 'Doctors retrieved successfully',
+      doctors,
+      pagination: {
+        page,
+        limit,
+        total,
+      },
+    });
+  } catch (error) {
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      code: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Error fetching doctors',
+      error: error.message,
+    });
+    next(error);
+  }
+};
+
 
   // Get doctor by ID
   public getDoctorById = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
