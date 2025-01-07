@@ -31,6 +31,9 @@ class UserRoutes {
    //refresh token
    this.router.get('/:id/refreshtoken',this.adminController.refreshToken );
 
+   //add doctor 
+   this.router.post('/add', adminAuth, roleAuth(['admin']), this.adminController.addDoctor);
+
    // get all doctors
    this.router.get('/doctors', adminAuth, roleAuth(['admin']), this.adminController.getAllDoctors);
 

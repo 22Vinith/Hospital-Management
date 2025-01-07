@@ -9,6 +9,7 @@ import routes from './routes';
 import Database from './config/database';
 import ErrorHandler from './middlewares/error.middleware';
 import Logger from './config/logger';
+import swaggerDocs from './utils/swagger';
 
 import morgan from 'morgan';
 
@@ -32,6 +33,7 @@ class App {
     this.initializeMiddleWares();
     this.initializeRoutes();
     this.initializeDatabase();
+    this.swaggerCall();
     this.initializeErrorHandlers();
     this.startApp();
   }
@@ -46,6 +48,10 @@ class App {
 
   public initializeDatabase(): void {
     this.db.initializeDatabase();
+  }
+
+  public swaggerCall(): void {
+    swaggerDocs(this.app,this.port,this.host);
   }
 
   public initializeRoutes(): void {

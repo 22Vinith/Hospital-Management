@@ -3,9 +3,13 @@ import jwt from 'jsonwebtoken';
 import { AdminModel } from '../models/admin.model';
 import doctorModel from '../models/doctor.model';
 import { sendEmail } from '../utils/user.util';
+import DoctorModel from '../models/doctor.model';
+import { IDoctor } from '../interfaces/doctor.interface';
+import { body } from 'express-validator';
 
 
 export class AdminService {
+  
   // Register admin
   public static registerAdmin = async (name: string, email:string, password: string) => {
     const existingAdmin = await AdminModel.findOne({ email });
@@ -25,13 +29,10 @@ export class AdminService {
     if (!admin || !(await bcrypt.compare(body.password, admin.password))) {
       throw new Error('Invalid email or password');
     }
-
     const token = jwt.sign({ id: admin._id }, process.env.JWT_ADMIN as string, { expiresIn: '1h' });
     const refreshToken = jwt.sign({ id: admin._id }, process.env.JWT_ADMIN as string, { expiresIn: '7d' });
-
     admin.refreshToken = refreshToken;
     await admin.save();
-
     return { token, refreshToken };
   }
 
@@ -45,7 +46,13 @@ export class AdminService {
     return await doctorModel.findById(id);
   };
 
-
+  // Add doctor
+  public static addDoctor = async({email}) => {
+    const data = await DoctorModel.create({email});
+    if(!data){
+      throw Error('Not able to create doctor');
+    }
+  }
 
   // Delete doctor
   public static deleteDoctor = async (id: string) => {
@@ -93,9 +100,7 @@ public static forgotPassword = async (email: string): Promise<void> => {
         if (!refreshToken) {
           throw new Error('Refresh token is missing');
         }
-        // Verify the refresh token
         const payload: any = jwt.verify(refreshToken, process.env.JWT_ADMIN);
-        // Generate a new access token
         const newAccessToken = jwt.sign(
           { id: payload.id }, 
           process.env.JWT_ADMIN,

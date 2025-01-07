@@ -80,6 +80,22 @@ public loginAdmin = async (req: Request, res: Response, next: NextFunction): Pro
     }
   };
 
+    // Add doctor
+    public addDoctor = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+      try {
+        await AdminService.addDoctor(req.body);
+        res.status(HttpStatus.OK).json({
+          code: HttpStatus.OK,
+          message: 'Doctor added successfully',
+        });
+      } catch (error) {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Cannot create doctor',
+          error: error.message,
+        });
+      }
+    };
 
 
   // Delete doctor
@@ -147,7 +163,7 @@ public loginAdmin = async (req: Request, res: Response, next: NextFunction): Pro
       //refresh token
       public refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         try {
-          const patientId = req.params.id; // Get patient ID from params
+          const patientId = req.params.id; 
           const newAccessToken = await AdminService.refreshToken(patientId);
     
           res.status(HttpStatus.OK).json({

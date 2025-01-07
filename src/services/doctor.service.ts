@@ -9,10 +9,18 @@ import { sendEmail } from '../utils/user.util';
 class DoctorService {
 
     //register doctor
-  public async signUp(body: Partial<IDoctor>): Promise<IDoctor> {
+  public async signUp(body: IDoctor): Promise<any> {
+    const doctor = await DoctorModel.findOne({email:body.email});
+    if(!doctor){
+        throw Error('doctor not registered by admin')
+    }
     const hashedPassword = await bcrypt.hash(body.password!, 10);
     body.password = hashedPassword;
-    return await DoctorModel.create(body);
+    const data = await DoctorModel.updateOne({email:body.email},
+      {doctor_name:body.doctor_name,
+      specialization:body.specialization,
+      password:body.password},{new: true});
+    return data;
   }
 
   //login doctor
@@ -21,27 +29,32 @@ class DoctorService {
     if (!doctor || !(await bcrypt.compare(body.password, doctor.password))) {
       throw new Error('Invalid email or password');
     }
-
     const token = jwt.sign({ id: doctor._id }, process.env.JWT_DOCTOR, { expiresIn: '1h' });
     const refreshToken = jwt.sign({ id: doctor._id }, process.env.JWT_DOCTOR, { expiresIn: '7d' });
-
     doctor.refreshToken = refreshToken;
     await doctor.save();
-
     return { token, refreshToken };
   }
 
-  //get all patients by specialization
-  public async getPatientsBySpecialization(specialization: string): Promise<any> {
-    try {
-        console.log(specialization)
-      // Find patients where the `required_specialist` matches the specialization
-      const patients = await PatientModel.find({ required_specialist: specialization });
-      return patients;
-    } catch (error) {
-      throw new Error(`Error fetching patients by specialization: ${error.message}`);
-    }
+
+// Get patients by specialization with pagination
+public async getPatientsBySpecialization(
+  specialization: string,
+  page: number,
+  limit: number
+): Promise<{ patients: any[]; total: number }> {
+  try {
+    const skip = (page - 1) * limit;
+    const patients = await PatientModel.find({ required_specialist: specialization })
+      .skip(skip)
+      .limit(limit);
+    const total = await PatientModel.countDocuments({ required_specialist: specialization });
+    return { patients, total };
+  } catch (error) {
+    throw new Error(`Error fetching patients by specialization: ${error.message}`);
   }
+}
+
 
   //get patient by id
   public async getPatientById(id: string) {
@@ -85,7 +98,6 @@ public deletePatientById = async (patientId: string): Promise<void> => {
     //reset password
     public resetPassword = async (body: any, userId: string): Promise<void> => {
         try{
-           
           const doctorData = await DoctorModel.findById(userId);
           if (!doctorData) {
             throw new Error('User not found');
@@ -98,6 +110,7 @@ public deletePatientById = async (patientId: string): Promise<void> => {
         }
     };
 
+
     //refresh token
   public async refreshToken(doctorId: string): Promise<string> {
     try {
@@ -109,11 +122,8 @@ public deletePatientById = async (patientId: string): Promise<void> => {
       if (!refreshToken) {
         throw new Error('Refresh token is missing');
       }
-      // Verify the refresh token
       const payload: any = jwt.verify(refreshToken, process.env.JWT_DOCTOR);
-      // Extract the doctor's id from the payload (use 'id' as that's what we stored in the JWT)
       const { id } = payload;
-      // Create a new access token
       const newAccessToken = jwt.sign({ id }, process.env.JWT_DOCTOR, { expiresIn: '1h' });
       return newAccessToken;
     } catch (error) {

@@ -15,7 +15,7 @@ class DoctorRoutes {
   private routes() {
 
     //Register for doctor
-    this.router.post('/signup', this.doctorValidator.validateSignUp, this.doctorController.signUp);
+    this.router.put('/register', this.doctorValidator.validateSignUp, this.doctorController.signUp);
 
     //Login for doctor
     this.router.post('/login', this.doctorValidator.validateLogin, this.doctorController.login);

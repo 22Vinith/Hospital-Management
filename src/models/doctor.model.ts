@@ -3,10 +3,10 @@ import { IDoctor } from '../interfaces/doctor.interface';
 
 const DoctorSchema = new Schema<IDoctor>(
     {
-      doctor_name: { type: String, required: true },
-      specialization: { type: String, required: true },
+      doctor_name: { type: String, default: null},
+      specialization: { type: String, default: null},
       email: { type: String, required: true, unique: true },
-      password: { type: String, required: true },
+      password: { type: String, default: null},
       refreshToken: { type: String, required: false }, 
     },
     { timestamps: true }

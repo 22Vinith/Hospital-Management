@@ -7,18 +7,16 @@ export class PatientService {
 
   // Patient SignUp
   public async signup(data: { name: string; age: number; email: string; phno: number; password: string }) {
-    // Check if patient already exists
     const existingPatient = await PatientModel.findOne({ email: data.email });
     if (existingPatient) {
       throw new Error('Email already registered');
     }
     const hashedPassword = await bcrypt.hash(data.password, 10);
-
     const patient = new PatientModel({ ...data, password: hashedPassword });
     await patient.save();
-
     return { message: 'Signup successful', patientId: patient._id };
   }
+
 
   //patient login
   public async login(body: { email: string; password: string }): Promise<{ token: string; refreshToken: string }> {
@@ -26,7 +24,6 @@ export class PatientService {
     if (!patient || !(await bcrypt.compare(body.password, patient.password))) {
       throw new Error('Invalid email or password');
     }
-
     const token = jwt.sign({ id: patient._id }, process.env.JWT_PATIENT as string, { expiresIn: '1h' });
     const refreshToken = jwt.sign({ id: patient._id }, process.env.JWT_PATIENT as string, { expiresIn: '7d' });
 
@@ -99,7 +96,6 @@ public forgotPassword = async (email: string): Promise<void> => {
       if (!refreshToken) {
         throw new Error('Refresh token is missing');
       }
-      // Verify the refresh token
       const payload: any = jwt.verify(refreshToken, process.env.JWT_PATIENT);
       // Generate a new access token
       const newAccessToken = jwt.sign(
@@ -107,7 +103,6 @@ public forgotPassword = async (email: string): Promise<void> => {
         process.env.JWT_PATIENT,
         { expiresIn: '1h' }
       );
-
       return newAccessToken;
     } catch (error) {
       throw new Error(`Error refreshing token: ${error.message}`);

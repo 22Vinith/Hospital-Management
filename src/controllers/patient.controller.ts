@@ -46,7 +46,7 @@ export class PatientController {
   // Book appointment for patient controller
   public async bookAppointment(req: Request, res: Response, next: NextFunction) {
     try {
-      const patientId = res.locals.user.id; // Patient ID from the authenticated token
+      const patientId = res.locals.user.id; 
       const appointmentData = { ...req.body, patientId };
       const result = await PatientService.bookAppointment(appointmentData);
 
@@ -64,8 +64,8 @@ export class PatientController {
     }
   }
 
-      // forget password 
-      public forgotPassword = async (
+  // forget password 
+  public forgotPassword = async (
         req: Request,
         res: Response,
         next: NextFunction
@@ -84,7 +84,7 @@ export class PatientController {
         }
       };
 
-        //Reset Password
+  //Reset Password
   public resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const customerId = res.locals.user._id;
@@ -105,7 +105,7 @@ export class PatientController {
   //refresh token
   public refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const patientId = req.params.id; // Get patient ID from params
+      const patientId = req.params.id; 
       const newAccessToken = await PatientService.refreshToken(patientId);
 
       res.status(HttpStatus.OK).json({

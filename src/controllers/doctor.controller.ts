@@ -1,4 +1,3 @@
-// controllers/doctor.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import DoctorService from '../services/doctor.service';
 import HttpStatus from 'http-status-codes';
@@ -34,38 +33,51 @@ export class DoctorController {
     }
   };
 
-  //get all patients by specialization
-  public getPatientsBySpecialization = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> => {
-    try {
-      const doctor = res.locals.user;
-      if (!doctor) {
-        return res.status(HttpStatus.UNAUTHORIZED).json({
-          code: HttpStatus.UNAUTHORIZED,
-          message: 'Unauthorized access',
-        });
-      }
-      const patients = await DoctorService.getPatientsBySpecialization(doctor.specialization);
-      // Check if there are no patients
-      if (patients.length === 0) {
-        return res.status(HttpStatus.OK).json({
-          code: HttpStatus.OK,
-          message: 'No patients have booked an appointment',
-          patients: [],
-        });
-      }
-      res.status(HttpStatus.OK).json({
-        code: HttpStatus.OK,
-        message: 'Patients retrieved successfully',
-        patients,
+// Get all patients by specialization with pagination
+public getPatientsBySpecialization = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const doctor = res.locals.user;
+    if (!doctor) {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        code: HttpStatus.UNAUTHORIZED,
+        message: 'Unauthorized access',
       });
-    } catch (error) {
-      next(error);
     }
-  };
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const { patients, total } = await DoctorService.getPatientsBySpecialization(
+      doctor.specialization,
+      page,
+      limit
+    );
+    // Check if there are no patients
+    if (patients.length === 0) {
+      return res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'No patients have booked an appointment',
+        patients: [],
+        pagination: { page, limit, total: 0 },
+      });
+    }
+    res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      message: 'Patients retrieved successfully',
+      patients,
+      pagination: {
+        page,
+        limit,
+        total,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
   
   //get patient by id
   public getPatientById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -94,8 +106,8 @@ export class DoctorController {
     }
   };
 
-    // forget password 
-    public forgotPassword = async (
+  // forget password 
+  public forgotPassword = async (
         req: Request,
         res: Response,
         next: NextFunction
@@ -112,9 +124,10 @@ export class DoctorController {
             message: 'User not found'
           });
         }
-      };
+  };
 
-        //Reset Password
+
+  //Reset Password
   public resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
       const customerId = res.locals.user._id;
@@ -131,6 +144,7 @@ export class DoctorController {
       });
     }
   };
+
 
 //delete patient by id
 public async deletePatientById(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -150,11 +164,12 @@ public async deletePatientById(req: Request, res: Response, next: NextFunction):
     }
 }
 
+
 //refresh token by id
   public refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const doctorId = req.params.id;  // Extract doctor id from URL params
-      const token = await DoctorService.refreshToken(doctorId); // Call service to refresh token
+      const doctorId = req.params.id;  
+      const token = await DoctorService.refreshToken(doctorId); 
       res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         message: 'Access token refreshed successfully',
