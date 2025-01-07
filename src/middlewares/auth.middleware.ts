@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Model } from 'mongoose';  // Import Model to fetch from any collection
 import doctorModel from '../models/doctor.model';
 import patientModel from '../models/patient.model';
+import { AdminModel } from '../models/admin.model';
 
 
 export const auth = (secretKey: string, model: Model<any>) => {
@@ -53,3 +54,7 @@ export const patientAuth = auth(process.env.JWT_PATIENT, patientModel);
 export const doctorResetAuth = auth(process.env.JWT_RESET_DOCTOR,doctorModel );  
 
 export const patientResetAuth = auth(process.env.JWT_RESET_PATIENT,patientModel );  
+
+export const adminAuth = auth(process.env.JWT_ADMIN, AdminModel); 
+
+export const adminResetAuth = auth(process.env.JWT_RESET_ADMIN, AdminModel); 

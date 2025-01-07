@@ -23,23 +23,25 @@ export class PatientController {
     }
   }
 
-  // Login for patient controller
-  public async login(req: Request, res: Response, next: NextFunction) {
-    try {
-      const result = await PatientService.login(req.body);
-      res.status(HttpStatus.OK).json({
-        code: HttpStatus.OK,
-        message: 'Login successful',
-        data: result,
-      });
-    } catch (error) {
-      res.status(HttpStatus.UNAUTHORIZED).json({
-        code: HttpStatus.UNAUTHORIZED,
-        message: error.message || 'Invalid email or password',
-      });
-      next(error);
-    }
+ // Login for patient
+ public async login(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { token, refreshToken } = await PatientService.login(req.body); 
+    res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      message: 'Login successful',
+      token,
+      refreshToken,
+    });
+  } catch (error) {
+    res.status(HttpStatus.UNAUTHORIZED).json({
+      code: HttpStatus.UNAUTHORIZED,
+      message: error.message || 'Invalid email or password',
+    });
+    next(error);
   }
+}
+
 
   // Book appointment for patient controller
   public async bookAppointment(req: Request, res: Response, next: NextFunction) {

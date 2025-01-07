@@ -20,28 +20,23 @@ export class PatientService {
     return { message: 'Signup successful', patientId: patient._id };
   }
 
-  // Patient Login
-  public async login(data: { email: string; password: string }) {
- 
-    const patient = await PatientModel.findOne({ email: data.email });
-    if (!patient) {
+  //patient login
+  public async login(body: { email: string; password: string }): Promise<{ token: string; refreshToken: string }> {
+    const patient = await PatientModel.findOne({ email: body.email });
+    if (!patient || !(await bcrypt.compare(body.password, patient.password))) {
       throw new Error('Invalid email or password');
     }
-    const isPasswordValid = await bcrypt.compare(data.password, patient.password);
-    if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
-    }
-    // Generate JWT tokens
-    const token = jwt.sign({ id: patient._id }, process.env.JWT_PATIENT, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: patient._id }, process.env.JWT_PATIENT, { expiresIn: '7d' });
+
+    const token = jwt.sign({ id: patient._id }, process.env.JWT_PATIENT as string, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ id: patient._id }, process.env.JWT_PATIENT as string, { expiresIn: '7d' });
 
     patient.refreshToken = refreshToken;
     await patient.save();
 
-    return { token, refreshToken, patientId: patient._id };
+    return { token, refreshToken };
   }
 
-
+  
   //Book appointnment for patient
   public async bookAppointment(data: {
     ailment: string;
