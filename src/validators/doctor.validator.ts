@@ -22,14 +22,14 @@ class DoctorValidator {
     body('specialization').isString().withMessage('Specialization is required'),
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    this.handleValidationErrors, // Call handleValidationErrors at the end of validation chain
+    this.handleValidationErrors, 
   ];
 
   // Validate login 
   public validateLogin = [
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    this.handleValidationErrors, // Call handleValidationErrors here too
+    this.handleValidationErrors,
   ];
 
   // Validate update status 
@@ -41,13 +41,13 @@ class DoctorValidator {
   // Validate forgot password  
   public validateForgotPassword = [
     body('email').isEmail().withMessage('Valid email is required'),
-    this.handleValidationErrors, // Call handleValidationErrors here too
+    this.handleValidationErrors, 
   ];
 
   // Validate reset password 
   public validateResetPassword = [
     body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
-    this.handleValidationErrors, // Call handleValidationErrors here too
+    this.handleValidationErrors, 
   ];
 }
 

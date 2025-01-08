@@ -54,12 +54,68 @@ class UserRoutes {
       this.patientController.signup
     );
 
+    /**
+     * @openapi
+     * /api/v1/patient/login:
+     *   post:
+     *     tags:
+     *       - Patient
+     *     summary: Login patient
+     *     description: Allows a patient to login.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 example: patient1@gmail.com
+     *               password:
+     *                 type: string
+     *                 example: patient123
+     *     responses:
+     *       200:
+     *         description: login successful.
+     *       400:
+     *         description: Invalid email or password
+     */
+
     // Login route
     this.router.post(
       '/login',
       PatientValidator.validateLogin,
       this.patientController.login
     );
+
+    /**
+     * @openapi
+     * /api/v1/patient/appointment:
+     *   post:
+     *     tags:
+     *       - Patient
+     *     summary: Book appointment for patient
+     *     description: Allows a patient to Book appointment.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               ailment:
+     *                 type: string
+     *                 example: I have disease abc
+     *               required_specialist:
+     *                 type: string
+     *                 example: physician
+     *     responses:
+     *       200:
+     *         description: Booked appointment successful.
+     *       400:
+     *         description: Unable to book appointment
+     */
 
     // Book appointment route
     this.router.post(
@@ -69,12 +125,62 @@ class UserRoutes {
       this.patientController.bookAppointment
     );
 
+    /**
+     * @openapi
+     * /api/v1/patient/forgot-password:
+     *   post:
+     *     tags:
+     *       - Patient
+     *     summary: Forgot password
+     *     description: Forgot password.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 example: patient1@gmail.com
+     *     responses:
+     *       200:
+     *         description: Successfully sent reset token to your registered email .
+     *       400:
+     *         description: Unable to send Reset token 
+     */
+
     // forget password route
     this.router.post(
       '/forgot-password',
       PatientValidator.validateForgotPassword,
       this.patientController.forgotPassword
     );
+
+    /**
+     * @openapi
+     * /api/v1/patient/reset-password:
+     *   post:
+     *     tags:
+     *       - Patient
+     *     summary: Reset password
+     *     description: Reset password.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               newPassword:
+     *                 type: string
+     *                 example: newpassword
+     *     responses:
+     *       200:
+     *         description: Successfully reset new password .
+     *       400:
+     *         description: Unable to Reset password 
+     */
 
     // Reset Password route
     this.router.post(
@@ -83,6 +189,28 @@ class UserRoutes {
       PatientValidator.validateResetPassword,
       this.patientController.resetPassword
     );
+
+    /**
+     * @openapi
+     * /api/v1/patient/{id}/refreshtoken:
+     *   get:
+     *     tags:
+     *       - Patient
+     *     summary: Refreshtoken
+     *     description: Refreshtoken.
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: Refreshtoken.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Successfully created Refreshtoken .
+     *       400:
+     *         description: Unable to create Refreshtoken
+     */
 
     //refresh token
     this.router.get('/:id/refreshtoken', this.patientController.refreshToken);

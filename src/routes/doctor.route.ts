@@ -14,29 +14,254 @@ class DoctorRoutes {
 
   private routes() {
 
+    /**
+     * @openapi
+     * /api/v1/doctor/register:
+     *   put:
+     *     tags:
+     *       - Doctor
+     *     summary: register doctor
+     *     description: Allows a doctor to register.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               doctor_name:
+     *                 type: string
+     *                 example: doctor1
+     *               specialization:
+     *                 type: string
+     *                 example: physician
+     *               email:
+     *                 type: string
+     *                 example: doctor1@gmail.com
+     *               password:
+     *                 type: string
+     *                 example: doctor123
+     *     responses:
+     *       200:
+     *         description: Signup successful.
+     *       400:
+     *         description: Email already registered.
+     */
+
     //Register for doctor
     this.router.put('/register', this.doctorValidator.validateSignUp, this.doctorController.signUp);
+
+    /**
+     * @openapi
+     * /api/v1/doctor/login:
+     *   post:
+     *     tags:
+     *       - Doctor
+     *     summary: login doctor
+     *     description: Allows a doctor to login.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 example: doctor1@gmail.com
+     *               password:
+     *                 type: string
+     *                 example: doctor123
+     *     responses:
+     *       200:
+     *         description: login successful.
+     *       400:
+     *         description: Email or password invallid.
+     */
 
     //Login for doctor
     this.router.post('/login', this.doctorValidator.validateLogin, this.doctorController.login);
 
+    /**
+     * @openapi
+     * /api/v1/doctor:
+     *   get:
+     *     tags:
+     *       - Doctor
+     *     summary: get all patients
+     *     description: get all patients list.
+     *     responses:
+     *       200:
+     *         description: successfully got patients list.
+     *       400:
+     *         description: unable to get patients list.
+     */
+
     //Get all patients 
     this.router.get('', doctorAuth, this.doctorController.getPatientsBySpecialization);
+
+    /**
+     * @openapi
+     * /api/v1/doctor/{id}/patient:
+     *   get:
+     *     tags:
+     *       - Doctor
+     *     summary: get patient by id
+     *     description: patient by id.
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: The ID of patient.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: successfully got patient by id.
+     *       400:
+     *         description: unable to get patient.
+     */
 
     //Get patient by id 
     this.router.get('/:id/patient', doctorAuth,this.doctorController.getPatientById);
 
+    /**
+     * @openapi
+     * /api/v1/doctor/{id}/delete:
+     *   delete:
+     *     tags:
+     *       - Doctor
+     *     summary: delete patient
+     *     description: delete patient
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: Delete patient by id
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: successfully deleted patient
+     *       400:
+     *         description: unable to delete patient
+     */
+
     //delete the patient by id
     this.router.delete('/:id/delete', doctorAuth, this.doctorController.deletePatientById);
+
+        /**
+     * @openapi
+     * /api/v1/doctor/{id}/update:
+     *   put:
+     *     tags:
+     *       - Doctor
+     *     summary: Update the ailment status of patient
+     *     description: Update the ailment status of patient
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: Update the ailment status of patient
+     *         schema:
+     *           type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               ailment_status:
+     *                 type: boolean
+     *                 example: true or false
+     *     responses:
+     *       200:
+     *         description: successfully updated patient
+     *       400:
+     *         description: unable to update patient
+     */
 
     //Update the ailment status of patient
     this.router.put('/:id/update', doctorAuth, this.doctorValidator.validateUpdateStatus, this.doctorController.updateAilmentStatus);
 
+        /**
+     * @openapi
+     * /api/v1/doctor/forgot-password:
+     *   post:
+     *     tags:
+     *       - Doctor
+     *     summary: Forgot password
+     *     description: Forgot password.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 example: doctor1@gmail.com
+     *     responses:
+     *       200:
+     *         description: Successfully sent reset token to your registered email .
+     *       400:
+     *         description: Unable to send Reset token 
+     */
+
     // forget password route
     this.router.post('/forgot-password', this.doctorValidator.validateForgotPassword, this.doctorController.forgotPassword);
+
+    /**
+     * @openapi
+     * /api/v1/doctor/reset-password:
+     *   post:
+     *     tags:
+     *       - Doctor
+     *     summary: Reset password
+     *     description: Reset password.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               newPassword:
+     *                 type: string
+     *                 example: newpassword
+     *     responses:
+     *       200:
+     *         description: Successfully reset new password .
+     *       400:
+     *         description: Unable to Reset password 
+     */
     
     // Reset Password route
     this.router.post('/reset-password', doctorResetAuth, this.doctorValidator.validateResetPassword, this.doctorController.resetPassword);
+
+    /**
+     * @openapi
+     * /api/v1/doctor/{id}/refreshtoken:
+     *   get:
+     *     tags:
+     *       - Doctor
+     *     summary: Refreshtoken
+     *     description: Refreshtoken.
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: Refreshtoken.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Successfully created Refreshtoken .
+     *       400:
+     *         description: Unable to create Refreshtoken
+     */
         
     //refresh token 
     this.router.get('/:id/refreshtoken', this.doctorController.refreshToken);

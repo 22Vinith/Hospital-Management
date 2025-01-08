@@ -1,4 +1,3 @@
-// services/doctor.service.ts
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import DoctorModel from '../models/doctor.model';
