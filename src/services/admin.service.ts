@@ -1,17 +1,18 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AdminModel } from '../models/admin.model';
-import doctorModel from '../models/doctor.model';
-import { sendEmail } from '../utils/user.util';
 import DoctorModel from '../models/doctor.model';
-import { IDoctor } from '../interfaces/doctor.interface';
-import { body } from 'express-validator';
-
+import redisClient from '../config/redis';
+import { sendEmail } from '../utils/user.util';
+import specializationModel from '../models/specialization.model';
 
 export class AdminService {
-
   // Register admin
-  public static registerAdmin = async (name: string, email:string, password: string) => {
+  public static registerAdmin = async (
+    name: string,
+    email: string,
+    password: string
+  ) => {
     const existingAdmin = await AdminModel.findOne({ email });
     if (existingAdmin) {
       throw new Error('Admin already exists');
@@ -23,104 +24,141 @@ export class AdminService {
   };
 
   // Admin login
-  public static async login(body: { email: string; password: string }): Promise<{ token: string; refreshToken: string }> {
+  public static async login(body: {
+    email: string;
+    password: string;
+  }): Promise<{ token: string; refreshToken: string }> {
     const admin = await AdminModel.findOne({ email: body.email });
-
     if (!admin || !(await bcrypt.compare(body.password, admin.password))) {
       throw new Error('Invalid email or password');
     }
-    const token = jwt.sign({ id: admin._id }, process.env.JWT_ADMIN as string, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: admin._id }, process.env.JWT_ADMIN as string, { expiresIn: '7d' });
+    const token = jwt.sign({ id: admin._id }, process.env.JWT_ADMIN as string, {
+      expiresIn: '1h'
+    });
+    const refreshToken = jwt.sign(
+      { id: admin._id },
+      process.env.JWT_ADMIN as string,
+      { expiresIn: '7d' }
+    );
     admin.refreshToken = refreshToken;
     await admin.save();
     return { token, refreshToken };
   }
 
-// Get all doctors with pagination
-public static getAllDoctors = async (
-  page: number,
-  limit: number
-): Promise<{ doctors: any[]; total: number }> => {
-  try {
+  // Get all doctors with Redis caching
+  public static getAllDoctors = async (
+    page: number,
+    limit: number
+  ): Promise<{ doctors: any[]; total: number }> => {
+    const cacheKey = `doctors:${page}:${limit}`;
+    const cachedDoctors = await redisClient.get(cacheKey);
+
+    if (cachedDoctors) {
+      return JSON.parse(cachedDoctors);
+    }
+
     const skip = (page - 1) * limit;
-    const doctors = await doctorModel.find().skip(skip).limit(limit);
-    const total = await doctorModel.countDocuments();
-    return { doctors, total };
-  } catch (error) {
-    throw new Error(`Error fetching doctors: ${error.message}`);
-  }
-};
+    const doctors = await DoctorModel.find().skip(skip).limit(limit);
+    const total = await DoctorModel.countDocuments();
+    const result = { doctors, total };
 
-
-  // Get doctor by ID
-  public static getDoctorById = async (id: string) => {
-    return await doctorModel.findById(id);
+    await redisClient.set(cacheKey, JSON.stringify(result), { EX: 600 }); // Cache for 10 minutes
+    return result;
   };
 
-  // Add doctor
-  public static addDoctor = async({email}) => {
-    const data = await DoctorModel.create({email});
-    if(!data){
-      throw Error('Not able to create doctor');
+  // Get doctor by ID with Redis caching
+  public static getDoctorById = async (id: string): Promise<any> => {
+    const cacheKey = `doctor:${id}`;
+    // Check Redis for cached data
+    const cachedDoctor = await redisClient.get(cacheKey);
+    if (cachedDoctor) {
+      return JSON.parse(cachedDoctor);
     }
-  }
-
-  // Delete doctor
-  public static deleteDoctor = async (id: string) => {
-    return await doctorModel.findByIdAndDelete(id);
+    const doctor = await DoctorModel.findById(id);
+    if (!doctor) {
+      throw new Error('Doctor not found');
+    }
+    await redisClient.set(cacheKey, JSON.stringify(doctor), {
+      EX: 600
+    });
+    return doctor;
   };
 
-  // forget password
-public static forgotPassword = async (email: string): Promise<void> => {
-    try{
-      const adminData = await AdminModel.findOne({ email });
-      if (!adminData) {
-        throw new Error('Email not found');
-      }
-      const token = jwt.sign({ id: adminData._id }, process.env.JWT_RESET_ADMIN, { expiresIn: '1h' });
-      await sendEmail(email, token);
-    } catch(error){
-      throw new Error("Error occured cannot send email: "+error)
+  // Add doctor and flush cache
+  public static addDoctor = async (data: { email: string }): Promise<any> => {
+    const newDoctor = await DoctorModel.create(data);
+    if (!newDoctor) {
+      throw new Error('Failed to add doctor');
     }
+    await redisClient.flushAll(); // Clear cache
+    return newDoctor;
   };
-  
-    //reset password
-    public static resetPassword = async (body: any, userId: string): Promise<void> => {
-        try{
-           
-          const adminData = await AdminModel.findById(userId);
-          if (!adminData) {
-            throw new Error('User not found');
-          }
-          const hashedPassword = await bcrypt.hash(body.newPassword, 10);
-          adminData.password = hashedPassword;
-          await adminData.save();
-        } catch (error) {
-          throw new Error(`Error resetting password: ${error.message}`);
-        }
-    };
-  
-    //refresh token
-    public static async refreshToken(adminId: string): Promise<string> {
-      try {
-        const admin = await AdminModel.findById(adminId);
-        if (!admin) {
-          throw new Error('Patient not found');
-        }
-        const refreshToken = admin.refreshToken; 
-        if (!refreshToken) {
-          throw new Error('Refresh token is missing');
-        }
-        const payload: any = jwt.verify(refreshToken, process.env.JWT_ADMIN);
-        const newAccessToken = jwt.sign(
-          { id: payload.id }, 
-          process.env.JWT_ADMIN,
-          { expiresIn: '1h' }
-        );
-  
-        return newAccessToken;
-      } catch (error) {
-        throw new Error(`Error refreshing token: ${error.message}`);
-      }
+
+  // Delete doctor and flush cache
+  public static deleteDoctor = async (id: string): Promise<boolean> => {
+    const doctor = await DoctorModel.findByIdAndDelete(id);
+    if (!doctor) {
+      throw new Error('Doctor not found');
     }
+    const count = (
+      await DoctorModel.find({ specialization: doctor.specialization })
+    ).length;
+    const spArray = await specializationModel.findOne({
+      $where: 'this.specializations.length>0'
+    });
+    if (count === 0) {
+       spArray.specializations.splice(
+        spArray.specializations.indexOf(doctor.specialization),
+        1
+      );
+      spArray.save();
+    }
+    await redisClient.flushAll();
+    return true;
+  };
+
+  // Forgot password
+  public static forgotPassword = async (email: string): Promise<void> => {
+    const admin = await AdminModel.findOne({ email });
+    if (!admin) {
+      throw new Error('Email not registered');
+    }
+    const token = jwt.sign(
+      { id: admin._id },
+      process.env.JWT_RESET_ADMIN as string,
+      { expiresIn: '1h' }
+    );
+    await sendEmail(email, token);
+  };
+
+  // Reset password
+  public static resetPassword = async (
+    id: string,
+    newPassword: string
+  ): Promise<void> => {
+    const admin = await AdminModel.findById(id);
+    if (!admin) {
+      throw new Error('Admin not found');
+    }
+    admin.password = await bcrypt.hash(newPassword, 10);
+    await admin.save();
+  };
+
+  // Refresh token
+  public static refreshToken = async (adminId: string): Promise<string> => {
+    const admin = await AdminModel.findById(adminId);
+    if (!admin || !admin.refreshToken) {
+      throw new Error('Invalid refresh token');
+    }
+    const payload = jwt.verify(
+      admin.refreshToken,
+      process.env.JWT_ADMIN as string
+    ) as { id: string };
+    const newToken = jwt.sign(
+      { id: payload.id },
+      process.env.JWT_ADMIN as string,
+      { expiresIn: '1h' }
+    );
+    return newToken;
+  };
 }

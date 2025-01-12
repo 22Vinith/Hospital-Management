@@ -33,8 +33,8 @@ export class DoctorController {
     }
   };
 
-// Get all patients by specialization with pagination
-public getPatientsBySpecialization = async (
+// Get all appointments by specialization with pagination
+public getAllAppointments = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -49,13 +49,13 @@ public getPatientsBySpecialization = async (
     }
     const page = parseInt(req.query.page as string, 10) || 1;
     const limit = parseInt(req.query.limit as string, 10) || 10;
-    const { patients, total } = await DoctorService.getPatientsBySpecialization(
+    const { appointments, total } = await DoctorService.getAllAppointments(
       doctor.specialization,
       page,
       limit
     );
     // Check if there are no patients
-    if (patients.length === 0) {
+    if (appointments.length === 0) {
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         message: 'No patients have booked an appointment',
@@ -65,8 +65,8 @@ public getPatientsBySpecialization = async (
     }
     res.status(HttpStatus.OK).json({
       code: HttpStatus.OK,
-      message: 'Patients retrieved successfully',
-      patients,
+      message: 'Appointments retrieved successfully',
+      appointments,
       pagination: {
         page,
         limit,
@@ -103,6 +103,41 @@ public getPatientsBySpecialization = async (
       });
     } catch (error) {
       next(error);
+    }
+  };
+
+  //get all appointments by patient id
+  public getAppointmentsByPatientId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const patient_id = req.params.id;
+      const data = await DoctorService.AppointmentsByPatientId(patient_id);
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Successfully fetched all appointments',
+        data
+      });
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
+  };
+
+  //create bill
+  public bill = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await DoctorService.generateBill(req.params.id,req.body);
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Successfully generated bill',
+        data
+      });
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
     }
   };
 

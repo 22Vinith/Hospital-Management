@@ -107,7 +107,10 @@ class UserRoutes {
      *               ailment:
      *                 type: string
      *                 example: I have disease abc
-     *               required_specialist:
+     *               doctor_id:
+     *                 type: string
+     *                 example: string value
+     *               specialization:
      *                 type: string
      *                 example: physician
      *     responses:
@@ -147,7 +150,7 @@ class UserRoutes {
      *       200:
      *         description: Successfully sent reset token to your registered email .
      *       400:
-     *         description: Unable to send Reset token 
+     *         description: Unable to send Reset token
      */
 
     // forget password route
@@ -156,6 +159,80 @@ class UserRoutes {
       PatientValidator.validateForgotPassword,
       this.patientController.forgotPassword
     );
+
+    /**
+     * @openapi
+     * /api/v1/patient/specializations:
+     *   get:
+     *     tags:
+     *       - Patient
+     *     summary: get all specialization
+     *     description: specializations
+     *     responses:
+     *       200:
+     *         description: successfully fetched all specialization.
+     *       400:
+     *         description: unable to get specialization.
+     */
+
+    //Get appointments by patient id
+    this.router.get('/specializations', this.patientController.getSpArray);
+
+    /**
+     * @openapi
+     * /api/v1/patient/doctors:
+     *   post:
+     *     tags:
+     *       - Patient
+     *     summary: get doctors by specialization
+     *     description: doctors by specialization
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               specialization:
+     *                 type: string
+     *                 example: physician
+     *     responses:
+     *       200:
+     *         description: successfully fetched all doctors.
+     *       400:
+     *         description: unable to get doctors.
+     */
+
+    //Get doctors by specialization
+    this.router.post(
+      '/doctors',
+      this.patientController.getDoctorBySpecialization
+    );
+
+    /**
+     * @openapi
+     * /api/v1/patient/{id}/bill:
+     *   get:
+     *     tags:
+     *       - Patient
+     *     summary: get bill
+     *     description: get bill.
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: appointment id.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Successfully fetched bill .
+     *       400:
+     *         description: Unable to fetch bill
+     */
+
+    //get bill
+    this.router.get('/:id/bill', this.patientController.getBill);
 
     /**
      * @openapi
@@ -179,7 +256,7 @@ class UserRoutes {
      *       200:
      *         description: Successfully reset new password .
      *       400:
-     *         description: Unable to Reset password 
+     *         description: Unable to Reset password
      */
 
     // Reset Password route

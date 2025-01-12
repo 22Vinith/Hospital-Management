@@ -1,11 +1,11 @@
 import express, { IRouter } from 'express';
 import { DoctorController } from '../controllers/doctor.controller';
-import DoctorValidator from '../validators/doctor.validator';  // Corrected import
+import DoctorValidator from '../validators/doctor.validator'; // Corrected import
 import { doctorAuth, doctorResetAuth } from '../middlewares/auth.middleware';
 
 class DoctorRoutes {
   private doctorController = new DoctorController();
-  private doctorValidator = DoctorValidator;  // Removed "new" since it's default export
+  private doctorValidator = DoctorValidator; // Removed "new" since it's default export
   private router = express.Router();
 
   constructor() {
@@ -13,7 +13,6 @@ class DoctorRoutes {
   }
 
   private routes() {
-
     /**
      * @openapi
      * /api/v1/doctor/register:
@@ -49,7 +48,11 @@ class DoctorRoutes {
      */
 
     //Register for doctor
-    this.router.put('/register', this.doctorValidator.validateSignUp, this.doctorController.signUp);
+    this.router.put(
+      '/register',
+      this.doctorValidator.validateSignUp,
+      this.doctorController.signUp
+    );
 
     /**
      * @openapi
@@ -80,7 +83,11 @@ class DoctorRoutes {
      */
 
     //Login for doctor
-    this.router.post('/login', this.doctorValidator.validateLogin, this.doctorController.login);
+    this.router.post(
+      '/login',
+      this.doctorValidator.validateLogin,
+      this.doctorController.login
+    );
 
     /**
      * @openapi
@@ -88,17 +95,21 @@ class DoctorRoutes {
      *   get:
      *     tags:
      *       - Doctor
-     *     summary: get all patients
-     *     description: get all patients list.
+     *     summary: get all appointments based on specialization
+     *     description: get all appointments list.
      *     responses:
      *       200:
-     *         description: successfully got patients list.
+     *         description: successfully got appointments list.
      *       400:
-     *         description: unable to get patients list.
+     *         description: unable to get appointments list.
      */
 
-    //Get all patients 
-    this.router.get('', doctorAuth, this.doctorController.getPatientsBySpecialization);
+    //Get all Appointments
+    this.router.get(
+      '',
+      doctorAuth,
+      this.doctorController.getAllAppointments
+    );
 
     /**
      * @openapi
@@ -122,8 +133,41 @@ class DoctorRoutes {
      *         description: unable to get patient.
      */
 
-    //Get patient by id 
-    this.router.get('/:id/patient', doctorAuth,this.doctorController.getPatientById);
+    //Get patient by id
+    this.router.get(
+      '/:id/patient',
+      doctorAuth,
+      this.doctorController.getPatientById
+    );
+
+    /**
+     * @openapi
+     * /api/v1/doctor/{id}/appointments:
+     *   get:
+     *     tags:
+     *       - Doctor
+     *     summary: get appointments by patient id
+     *     description: appointments
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: The ID of patient.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: successfully fetched all appointments.
+     *       400:
+     *         description: unable to get appointments.
+     */
+
+    //Get appointments by patient id
+    this.router.get(
+      '/:id/appointments',
+      doctorAuth,
+      this.doctorController.getAppointmentsByPatientId
+    );
 
     /**
      * @openapi
@@ -148,9 +192,13 @@ class DoctorRoutes {
      */
 
     //delete the patient by id
-    this.router.delete('/:id/delete', doctorAuth, this.doctorController.deletePatientById);
+    this.router.delete(
+      '/:id/delete',
+      doctorAuth,
+      this.doctorController.deletePatientById
+    );
 
-        /**
+    /**
      * @openapi
      * /api/v1/doctor/{id}/update:
      *   put:
@@ -183,9 +231,52 @@ class DoctorRoutes {
      */
 
     //Update the ailment status of patient
-    this.router.put('/:id/update', doctorAuth, this.doctorValidator.validateUpdateStatus, this.doctorController.updateAilmentStatus);
+    this.router.put(
+      '/:id/update',
+      doctorAuth,
+      this.doctorValidator.validateUpdateStatus,
+      this.doctorController.updateAilmentStatus
+    );
 
-        /**
+    /**
+     * @openapi
+     * /api/v1/doctor/{id}/bill:
+     *   post:
+     *     tags:
+     *       - Doctor
+     *     summary: create bill using appointment id
+     *     description: bill
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: The ID of appointment.
+     *         schema:
+     *           type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               prescription:
+     *                 type: string
+     *                 example: take ibrhel powder
+     *               invoice:
+     *                 type: string
+     *                 example: 200rs
+     *     responses:
+     *       200:
+     *         description: successfully created bill.
+     *       400:
+     *         description: unable to create bill.
+     */
+
+    //create bill using appointment id
+    this.router.post('/:id/bill', doctorAuth, this.doctorController.bill);
+
+    /**
      * @openapi
      * /api/v1/doctor/forgot-password:
      *   post:
@@ -207,11 +298,15 @@ class DoctorRoutes {
      *       200:
      *         description: Successfully sent reset token to your registered email .
      *       400:
-     *         description: Unable to send Reset token 
+     *         description: Unable to send Reset token
      */
 
     // forget password route
-    this.router.post('/forgot-password', this.doctorValidator.validateForgotPassword, this.doctorController.forgotPassword);
+    this.router.post(
+      '/forgot-password',
+      this.doctorValidator.validateForgotPassword,
+      this.doctorController.forgotPassword
+    );
 
     /**
      * @openapi
@@ -235,11 +330,16 @@ class DoctorRoutes {
      *       200:
      *         description: Successfully reset new password .
      *       400:
-     *         description: Unable to Reset password 
+     *         description: Unable to Reset password
      */
-    
+
     // Reset Password route
-    this.router.post('/reset-password', doctorResetAuth, this.doctorValidator.validateResetPassword, this.doctorController.resetPassword);
+    this.router.post(
+      '/reset-password',
+      doctorResetAuth,
+      this.doctorValidator.validateResetPassword,
+      this.doctorController.resetPassword
+    );
 
     /**
      * @openapi
@@ -262,10 +362,9 @@ class DoctorRoutes {
      *       400:
      *         description: Unable to create Refreshtoken
      */
-        
-    //refresh token 
-    this.router.get('/:id/refreshtoken', this.doctorController.refreshToken);
 
+    //refresh token
+    this.router.get('/:id/refreshtoken', this.doctorController.refreshToken);
   }
 
   public getRoutes(): IRouter {

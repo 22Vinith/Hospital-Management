@@ -6,8 +6,5 @@ export interface IPatient extends Document {
   email: string;
   phno: number;
   password: string;
-  ailment?: string;
-  required_specialist?: string;
-  ailment_status?: boolean;
   refreshToken?: string; 
 }

@@ -19,8 +19,8 @@ const loginSchema = Joi.object({
 // Joi schema for booking appointment
 const bookAppointmentSchema = Joi.object({
   ailment: Joi.string().required(),
-  required_specialist: Joi.string().required(),
-  ailment_status: Joi.boolean(),
+  doctor_id: Joi.string().required(),
+  specialization: Joi.string().required()
 });
 
 // Joi schema for forgot password (email)
