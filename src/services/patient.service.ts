@@ -71,6 +71,21 @@ export class PatientService {
     return { message: 'Appointment booked successfully', appointment };
   }
 
+  //patientInfo by Id
+  public async getPatientInfoById(patientId: string): Promise<any> {
+    try {
+      const patientInfo = await PatientModel.findById(patientId);
+
+      if (!patientInfo) {
+        return null;
+      }
+      return patientInfo;
+    } catch (error) {
+      console.error('Error fetching patient info in service:', error.message);
+      throw new Error('Unable to fetch patient information');
+    }
+  }
+
   // Specialization array
   public async getSpArray() {
     const spArray = await specializationModel.findOne({

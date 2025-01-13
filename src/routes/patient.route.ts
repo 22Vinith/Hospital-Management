@@ -175,8 +175,8 @@ class UserRoutes {
      *         description: unable to get specialization.
      */
 
-    //Get appointments by patient id
-    this.router.get('/specializations', this.patientController.getSpArray);
+    //Get all specialization
+    this.router.get('/specializations',this.patientController.getSpArray);
 
     /**
      * @openapi
@@ -291,6 +291,31 @@ class UserRoutes {
 
     //refresh token
     this.router.get('/:id/refreshtoken', this.patientController.refreshToken);
+
+    /**
+     * @openapi
+     * /api/v1/patient/{id}/patientInfo:
+     *   get:
+     *     tags:
+     *       - Patient
+     *     summary: Patient info.
+     *     description:patient info.
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: patient info.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Successfully fetched patient info. .
+     *       400:
+     *         description: Unable to fetch patient info.
+     */
+
+    //patientInfo by id
+    this.router.get('/:id/patientInfo',patientAuth, this.patientController.getPatientInfo);
   };
 
   public getRoutes = (): IRouter => {

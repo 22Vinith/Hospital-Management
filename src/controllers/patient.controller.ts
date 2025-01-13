@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import PatientService from '../services/patient.service';
 import HttpStatus from 'http-status-codes';
+import { log } from 'winston';
 
 export class PatientController {
   //Signup for patient controller
@@ -176,6 +177,47 @@ export class PatientController {
       });
     }
   };
+
+  //get patient info
+  public async getPatientInfo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const patientId = req.params.id;
+
+      if (!patientId) {
+        res.status(HttpStatus.BAD_REQUEST).json({
+          code: HttpStatus.BAD_REQUEST,
+          message: 'Patient ID is required',
+        });
+        return;
+      }
+
+      const patientInfo = await PatientService.getPatientInfoById(patientId);
+
+      if (!patientInfo) {
+        res.status(HttpStatus.NOT_FOUND).json({
+          code: HttpStatus.NOT_FOUND,
+          message: 'Patient not found',
+        });
+        return;
+      }
+
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Successfully fetched patient information',
+        data: patientInfo,
+      });
+    } catch (error: any) {
+      console.error('Error fetching patient information:', error.message);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      });
+    }
+  }
 
   //refresh token
   public refreshToken = async (

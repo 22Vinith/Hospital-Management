@@ -11,5 +11,6 @@ const PatientSchema: Schema = new Schema({
   required_specialist: { type: String },
   ailment_status: { type: Boolean, default: false },
   refreshToken: { type: String, required: false },
-});
+},
+{ timestamps: true });
 export default model<IPatient> ('patient',PatientSchema);
