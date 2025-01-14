@@ -299,7 +299,7 @@ class UserRoutes {
      *     tags:
      *       - Patient
      *     summary: Patient info.
-     *     description:patient info.
+     *     description: patient info.
      *     parameters:
      *       - name: id
      *         in: path
@@ -316,6 +316,32 @@ class UserRoutes {
 
     //patientInfo by id
     this.router.get('/:id/patientInfo',patientAuth, this.patientController.getPatientInfo);
+
+
+    /**
+     * @openapi
+     * /api/v1/patient/{id}/updatePatientInfo:
+     *   get:
+     *     tags:
+     *       - Patient
+     *     summary: update Patient Info
+     *     description: update Patient Info
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: update patient info.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Successfully updated Patient Info
+     *       400:
+     *         description: Unable to updated Patient Info
+     */
+
+    //update patientInfo by id
+    this.router.put('/:id/updatePatientInfo',patientAuth, this.patientController.updatePatientInfo);
   };
 
   public getRoutes = (): IRouter => {

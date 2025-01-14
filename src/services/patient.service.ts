@@ -86,6 +86,26 @@ export class PatientService {
     }
   }
 
+  //update the patient info 
+  public async updatePatientInfo(patientId: string, updates: any): Promise<any> {
+    try {
+      const updatedPatient = await PatientModel.findByIdAndUpdate(
+        patientId,
+        updates,
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedPatient) {
+        return null; // Return null if the patient is not found
+      }
+
+      return updatedPatient;
+    } catch (error) {
+      console.error('Error updating patient info in service:', error.message);
+      throw new Error('Unable to update patient information');
+    }
+  }
+
   // Specialization array
   public async getSpArray() {
     const spArray = await specializationModel.findOne({

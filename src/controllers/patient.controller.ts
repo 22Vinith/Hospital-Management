@@ -178,6 +178,38 @@ export class PatientController {
     }
   };
 
+  //update patient Info
+  public updatePatientInfo = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
+    try {
+      const patientId = req.params.id; 
+      const updates = req.body;
+
+      const updatedPatient = await PatientService.updatePatientInfo(patientId, updates);
+
+      if (!updatedPatient) {
+        return res.status(HttpStatus.NOT_FOUND).json({
+          code: HttpStatus.NOT_FOUND,
+          message: 'Patient not found',
+        });
+      }
+
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Patient information updated successfully',
+        data: updatedPatient,
+      });
+    } catch (error) {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      });
+    }
+  };
+
   //get patient info
   public async getPatientInfo(
     req: Request,
