@@ -45,6 +45,25 @@ export class PatientController {
     }
   }
 
+
+    //get all appointments by patient id
+    public getAppointmentsByPatientId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+        const patient_id = req.params.id;
+        const data = await PatientService.AppointmentsByPatientId(patient_id);
+        res.status(HttpStatus.OK).json({
+          code: HttpStatus.OK,
+          message: 'Successfully fetched all appointments',
+          data
+        });
+      } catch (error) {
+        res.status(HttpStatus.BAD_REQUEST).json({
+          code: HttpStatus.BAD_REQUEST,
+          message: error.message,
+        });
+      }
+    };
+
   // Book appointment for patient controller
   public async bookAppointment(
     req: Request,

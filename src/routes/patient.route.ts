@@ -318,30 +318,78 @@ class UserRoutes {
     this.router.get('/:id/patientInfo',patientAuth, this.patientController.getPatientInfo);
 
 
-    /**
+/**
      * @openapi
      * /api/v1/patient/{id}/updatePatientInfo:
-     *   get:
+     *   put:
      *     tags:
      *       - Patient
-     *     summary: update Patient Info
-     *     description: update Patient Info
+     *     summary: update patient information
+     *     description: Allows a patient to update his information by id.
      *     parameters:
      *       - name: id
      *         in: path
      *         required: true
-     *         description: update patient info.
+     *         description: The ID of the patient to update.
      *         schema:
      *           type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               name:
+     *                 type: string
+     *                 example: my new name
+     *               age:
+     *                 type: integer
+     *                 example: my updated age
+     *               email:
+     *                 type: string
+     *                 example: my updated email
+     *               phno:
+     *                 type: integer
+     *                 example: my updated phone number
      *     responses:
      *       200:
-     *         description: Successfully updated Patient Info
+     *         description: patient updated.
      *       400:
-     *         description: Unable to updated Patient Info
+     *         description: patient Not updated
      */
 
     //update patientInfo by id
     this.router.put('/:id/updatePatientInfo',patientAuth, this.patientController.updatePatientInfo);
+
+    /**
+     * @openapi
+     * /api/v1/patient/{id}/appointments:
+     *   get:
+     *     tags:
+     *       - Patient
+     *     summary: get appointments by patient id
+     *     description: appointments
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         description: The ID of patient.
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: successfully fetched all appointments.
+     *       400:
+     *         description: unable to get appointments.
+     */
+
+    //Get appointments by patient id
+        this.router.get(
+          '/:id/appointments',
+          patientAuth,
+          this.patientController.getAppointmentsByPatientId
+        );
   };
 
   public getRoutes = (): IRouter => {
