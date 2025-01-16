@@ -45,24 +45,27 @@ export class PatientController {
     }
   }
 
-
-    //get all appointments by patient id
-    public getAppointmentsByPatientId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-        const patient_id = req.params.id;
-        const data = await PatientService.AppointmentsByPatientId(patient_id);
-        res.status(HttpStatus.OK).json({
-          code: HttpStatus.OK,
-          message: 'Successfully fetched all appointments',
-          data
-        });
-      } catch (error) {
-        res.status(HttpStatus.BAD_REQUEST).json({
-          code: HttpStatus.BAD_REQUEST,
-          message: error.message,
-        });
-      }
-    };
+  //get all appointments by patient id
+  public getAppointmentsByPatientId = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const patient_id = req.params.id;
+      const data = await PatientService.AppointmentsByPatientId(patient_id);
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Successfully fetched all appointments',
+        data
+      });
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
+        message: error.message
+      });
+    }
+  };
 
   // Book appointment for patient controller
   public async bookAppointment(
@@ -204,27 +207,30 @@ export class PatientController {
     next: NextFunction
   ): Promise<any> => {
     try {
-      const patientId = req.params.id; 
+      const patientId = req.params.id;
       const updates = req.body;
 
-      const updatedPatient = await PatientService.updatePatientInfo(patientId, updates);
+      const updatedPatient = await PatientService.updatePatientInfo(
+        patientId,
+        updates
+      );
 
       if (!updatedPatient) {
         return res.status(HttpStatus.NOT_FOUND).json({
           code: HttpStatus.NOT_FOUND,
-          message: 'Patient not found',
+          message: 'Patient not found'
         });
       }
 
       res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         message: 'Patient information updated successfully',
-        data: updatedPatient,
+        data: updatedPatient
       });
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
         code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message,
+        message: error.message
       });
     }
   };
@@ -241,7 +247,7 @@ export class PatientController {
       if (!patientId) {
         res.status(HttpStatus.BAD_REQUEST).json({
           code: HttpStatus.BAD_REQUEST,
-          message: 'Patient ID is required',
+          message: 'Patient ID is required'
         });
         return;
       }
@@ -251,7 +257,7 @@ export class PatientController {
       if (!patientInfo) {
         res.status(HttpStatus.NOT_FOUND).json({
           code: HttpStatus.NOT_FOUND,
-          message: 'Patient not found',
+          message: 'Patient not found'
         });
         return;
       }
@@ -259,13 +265,13 @@ export class PatientController {
       res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         message: 'Successfully fetched patient information',
-        data: patientInfo,
+        data: patientInfo
       });
     } catch (error: any) {
       console.error('Error fetching patient information:', error.message);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         code: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message,
+        message: error.message
       });
     }
   }

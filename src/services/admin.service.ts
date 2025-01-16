@@ -107,7 +107,7 @@ export class AdminService {
       $where: 'this.specializations.length>0'
     });
     if (count === 0) {
-       spArray.specializations.splice(
+      spArray.specializations.splice(
         spArray.specializations.indexOf(doctor.specialization),
         1
       );

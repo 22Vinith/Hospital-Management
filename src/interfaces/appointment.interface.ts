@@ -6,4 +6,5 @@ export interface IAppointment extends Document {
   doctor_id: string,
   ailment_status?: boolean;
   specialization: string;
+  patientName:string;
 }

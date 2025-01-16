@@ -365,6 +365,93 @@ class DoctorRoutes {
 
     //refresh token
     this.router.get('/:id/refreshtoken', this.doctorController.refreshToken);
+
+        /**
+         * @openapi
+         * /api/v1/doctor/{id}/doctorInfo:
+         *   get:
+         *     tags:
+         *       - Doctor
+         *     summary: doctor info.
+         *     description: doctor info.
+         *     parameters:
+         *       - name: id
+         *         in: path
+         *         required: true
+         *         description: doctor info.
+         *         schema:
+         *           type: string
+         *     responses:
+         *       200:
+         *         description: Successfully fetched doctor info. .
+         *       400:
+         *         description: Unable to fetch doctor info.
+         */
+    
+        //doctorInfo by id
+        this.router.get('/:id/doctorInfo',doctorAuth, this.doctorController.getDoctorInfo);
+
+        /**
+             * @openapi
+             * /api/v1/doctor/{id}/updateDoctorInfo:
+             *   put:
+             *     tags:
+             *       - Doctor
+             *     summary: update doctor information
+             *     description: Allows a doctor to update his information by id.
+             *     parameters:
+             *       - name: id
+             *         in: path
+             *         required: true
+             *         description: The ID of the doctor to update.
+             *         schema:
+             *           type: string
+             *     requestBody:
+             *       required: true
+             *       content:
+             *         application/json:
+             *           schema:
+             *             type: object
+             *             properties:
+             *               doctor_name:
+             *                 type: string
+             *                 example: my new name
+
+   
+             *     responses:
+             *       200:
+             *         description: doctor updated.
+             *       400:
+             *         description: doctor Not updated
+             */
+        
+            //update doctorinfo by id
+            this.router.put('/:id/updateDoctorInfo',doctorAuth, this.doctorController.updateDoctorInfo);
+
+                    /**
+         * @openapi
+         * /api/v1/doctor/{id}/total-earnings:
+         *   get:
+         *     tags:
+         *       - Doctor
+         *     summary: doctor earning.
+         *     description: doctor earning.
+         *     parameters:
+         *       - name: id
+         *         in: path
+         *         required: true
+         *         description: doctor id.
+         *         schema:
+         *           type: string
+         *     responses:
+         *       200:
+         *         description: Successfully fetched total earned money.
+         *       400:
+         *         description: Unable to fetch totalAmount.
+         */
+
+            this.router.get('/:id/total-earnings', doctorAuth, this.doctorController.getTotalEarnings);
+        
   }
 
   public getRoutes(): IRouter {

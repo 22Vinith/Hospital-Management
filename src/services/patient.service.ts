@@ -7,7 +7,7 @@ import redisClient from '../config/redis';
 import { sendEmail } from '../utils/user.util';
 import specializationModel from '../models/specialization.model';
 import billModel from '../models/bill.model';
-import { error } from 'winston';
+import { error, log } from 'winston';
 import { Ibill } from '../interfaces/bill.interface';
 
 export class PatientService {
@@ -55,13 +55,13 @@ export class PatientService {
     return { token, refreshToken };
   }
 
-  //get all appointments by patientId 
+  //get all appointments by patientId
   public async AppointmentsByPatientId(patient_id): Promise<any> {
-    const appointments = await appointmentsModel.find({patient_id});
+    const appointments = await appointmentsModel.find({ patient_id });
     if (!appointments) {
       throw new Error('no appointments found');
     }
-    await redisClient.flushAll();  
+    await redisClient.flushAll();
     return appointments;
   }
 
@@ -72,11 +72,14 @@ export class PatientService {
     doctor_id,
     specialization
   }): Promise<Object> {
+    const patientDetails = await PatientModel.findOne({ _id: patient_id });
+    const patientName = patientDetails.name;
     const appointment = await appointmentsModel.create({
       patient_id,
       ailment,
       doctor_id,
-      specialization
+      specialization,
+      patientName
     });
     return { message: 'Appointment booked successfully', appointment };
   }
@@ -96,8 +99,11 @@ export class PatientService {
     }
   }
 
-  //update the patient info 
-  public async updatePatientInfo(patientId: string, updates: any): Promise<any> {
+  //update the patient info
+  public async updatePatientInfo(
+    patientId: string,
+    updates: any
+  ): Promise<any> {
     try {
       const updatedPatient = await PatientModel.findByIdAndUpdate(
         patientId,
@@ -132,7 +138,7 @@ export class PatientService {
 
   //get bill
   public async getBill(appointment_id): Promise<Ibill> {
-    const bill = await billModel.findOne({appointment_id:appointment_id});
+    const bill = await billModel.findOne({ appointment_id: appointment_id });
     if (!bill) {
       throw error('bill not found');
     }
