@@ -1,7 +1,7 @@
 import express, { IRouter } from 'express';
 import { DoctorController } from '../controllers/doctor.controller';
 import DoctorValidator from '../validators/doctor.validator'; // Corrected import
-import { doctorAuth, doctorResetAuth } from '../middlewares/auth.middleware';
+import { adminAuth, doctorAuth, doctorResetAuth } from '../middlewares/auth.middleware';
 
 class DoctorRoutes {
   private doctorController = new DoctorController();
@@ -452,6 +452,7 @@ class DoctorRoutes {
 
             this.router.get('/:id/total-earnings', doctorAuth, this.doctorController.getTotalEarnings);
         
+            this.router.get('/get-appointment/:doctorId/admin',adminAuth,this.doctorController.getAppointmentsByDoctor)
   }
 
   public getRoutes(): IRouter {

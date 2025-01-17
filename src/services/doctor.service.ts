@@ -272,6 +272,13 @@ class DoctorService {
     );
     return newToken;
   }
+
+  public async getAllAppointmentById(doctorId: string): Promise<any> {
+    console.log(doctorId)
+    const appointments = await appointmentsModel.find({ doctor_id: doctorId });
+    return appointments;
+  }
+  
 }
 
 export default new DoctorService();

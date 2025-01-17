@@ -349,4 +349,24 @@ export class DoctorController {
       });
     }
   };
+  public getAppointmentsByDoctor = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const doctor_id = req.params.doctorId;
+      const data = await DoctorService.getAllAppointmentById(doctor_id);
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Successfully fetched all appointments',
+        data
+      });
+    } catch (error) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
+        message: error.message
+      });
+    }
+  };
 }
