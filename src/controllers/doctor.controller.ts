@@ -48,6 +48,7 @@ export class DoctorController {
   ): Promise<any> => {
     try {
       const doctor = res.locals.user;
+      console.log(doctor)
       if (!doctor) {
         return res.status(HttpStatus.UNAUTHORIZED).json({
           code: HttpStatus.UNAUTHORIZED,
@@ -62,7 +63,7 @@ export class DoctorController {
         limit
       );
       // Check if there are no patients
-      if (appointments.length === 0) {
+      if (total === 0) {
         return res.status(HttpStatus.OK).json({
           code: HttpStatus.OK,
           message: 'No patients have booked an appointment',

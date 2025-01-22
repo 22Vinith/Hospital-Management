@@ -90,10 +90,18 @@ class DoctorService {
     // }
 
     const skip = (page - 1) * limit;
-    const appointments = await appointmentsModel
+    const appointments: any = await appointmentsModel
       .find({ specialization })
       .skip(skip)
       .limit(limit);
+      for(let i= 0; i<appointments.length; i++){
+        const patientData = await patientModel.findOne({_id: appointments[i].patient_id});
+        appointments[i] = {
+          ...appointments[i]._doc,
+          age: patientData.age,
+          phno: patientData.phno 
+        }
+      }
     const total = await appointmentsModel.countDocuments({ specialization });
     const result = { appointments, total };
 
@@ -274,11 +282,10 @@ class DoctorService {
   }
 
   public async getAllAppointmentById(doctorId: string): Promise<any> {
-    console.log(doctorId)
+    console.log(doctorId);
     const appointments = await appointmentsModel.find({ doctor_id: doctorId });
     return appointments;
   }
-  
 }
 
 export default new DoctorService();

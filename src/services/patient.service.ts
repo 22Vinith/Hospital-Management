@@ -57,12 +57,21 @@ export class PatientService {
 
   //get all appointments by patientId
   public async AppointmentsByPatientId(patient_id): Promise<any> {
-    const appointments = await appointmentsModel.find({ patient_id });
+    const appointments: any = await appointmentsModel.find({ patient_id });
+    const allAppointments = []
+    for(let i = 0; i<appointments.length; i++){
+      const doctorData = await doctorModel.findOne({_id: appointments[i].doctor_id});
+      allAppointments[i] = {
+        ...appointments[i]._doc,
+        doctor_name: doctorData.doctor_name
+      }
+      
+    }
     if (!appointments) {
       throw new Error('no appointments found');
     }
     await redisClient.flushAll();
-    return appointments;
+    return allAppointments;
   }
 
   // Book Appointment with Cache Clearing
